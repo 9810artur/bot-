@@ -24,8 +24,11 @@ from src.middlewares import LoggingMiddleware
 
 async def create_tables() -> None:
     """Create database tables."""
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    except Exception as e:
+        raise Exception(f"Failed to create database tables: {e}")
 
 
 async def main() -> None:
@@ -34,6 +37,11 @@ async def main() -> None:
     setup_logging()
     logger = logging.getLogger(__name__)
     logger.info(f"Starting {settings.APP_NAME}...")
+
+    # Validate required settings
+    if not settings.BOT_TOKEN or settings.BOT_TOKEN == "your_telegram_bot_token_here":
+        logger.error("BOT_TOKEN is not configured. Please set it in .env file.")
+        sys.exit(1)
 
     # Create database tables
     try:
@@ -44,22 +52,22 @@ async def main() -> None:
         sys.exit(1)
 
     # Initialize bot and dispatcher
-    bot = Bot(token=settings.BOT_TOKEN)
-    storage = MemoryStorage()
-    dp = Dispatcher(storage=storage)
-
-    # Register middlewares
-    dp.message.middleware(LoggingMiddleware())
-    dp.callback_query.middleware(LoggingMiddleware())
-
-    # Register routers (order matters)
-    dp.include_router(registration_router)
-    dp.include_router(influencer_router)
-    dp.include_router(advertiser_router)
-    dp.include_router(callbacks_router)
-    dp.include_router(common_router)
-
     try:
+        bot = Bot(token=settings.BOT_TOKEN)
+        storage = MemoryStorage()
+        dp = Dispatcher(storage=storage)
+
+        # Register middlewares
+        dp.message.middleware(LoggingMiddleware())
+        dp.callback_query.middleware(LoggingMiddleware())
+
+        # Register routers (order matters)
+        dp.include_router(registration_router)
+        dp.include_router(influencer_router)
+        dp.include_router(advertiser_router)
+        dp.include_router(callbacks_router)
+        dp.include_router(common_router)
+
         logger.info(f"{settings.APP_NAME} started successfully")
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
     except Exception as e:
@@ -71,4 +79,11 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("Bot was stopped by user")
+        sys.exit(0)
+    except Exception as e:
+        print(f"Fatal error: {e}")
+        sys.exit(1)

@@ -20,7 +20,7 @@ class UserService:
         self,
         telegram_id: int,
         full_name: str,
-        role: UserRole,
+        role: str,
         username: str | None = None,
         city: str | None = None,
     ):

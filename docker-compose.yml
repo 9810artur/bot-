@@ -1,5 +1,3 @@
-"""Docker Compose configuration for LocalAdsBot."""
-
 version: '3.9'
 
 services:

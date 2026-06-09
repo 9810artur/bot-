@@ -5,7 +5,6 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import CommandStart
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.states.registration import RegistrationStates
 from src.keyboards import get_role_selection_keyboard
