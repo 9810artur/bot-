@@ -1,7 +1,7 @@
-"""Database module for LocalAdsBot."""
+"""Database initialization with async support."""
 
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.pool import NullPool
 
 from src.config.settings import settings
 
@@ -11,10 +11,11 @@ engine = create_async_engine(
     settings.get_database_url(),
     echo=settings.DEBUG,
     future=True,
+    poolclass=NullPool,
 )
 
 # Create async session factory
-async_session_factory = sessionmaker(
+async_session_factory = async_sessionmaker(
     engine,
     class_=AsyncSession,
     expire_on_commit=False,
