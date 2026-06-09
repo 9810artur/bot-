@@ -16,6 +16,8 @@ from src.handlers import (
     registration_router,
     influencer_router,
     advertiser_router,
+    callbacks_router,
+    common_router,
 )
 from src.middlewares import LoggingMiddleware
 
@@ -50,10 +52,12 @@ async def main() -> None:
     dp.message.middleware(LoggingMiddleware())
     dp.callback_query.middleware(LoggingMiddleware())
 
-    # Register routers
+    # Register routers (order matters)
     dp.include_router(registration_router)
     dp.include_router(influencer_router)
     dp.include_router(advertiser_router)
+    dp.include_router(callbacks_router)
+    dp.include_router(common_router)
 
     try:
         logger.info(f"{settings.APP_NAME} started successfully")
